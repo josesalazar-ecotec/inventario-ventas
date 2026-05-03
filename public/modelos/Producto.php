@@ -35,4 +35,13 @@ class Producto
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function eliminar(int $id): bool
+    {
+        $sql = "DELETE FROM productos WHERE id = :id";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
 }
