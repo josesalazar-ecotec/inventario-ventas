@@ -26,6 +26,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if ($producto->crear($nombre, $descripcion, $precio, $stock)) {
             $mensaje = "Producto registrado correctamente.";
+            $nombre = "";
+            $descripcion = "";
+            $precio = "";
+            $stock = "";
         } else {
             $error = "No se pudo registrar el producto.";
         }
@@ -68,23 +72,23 @@ $productos = $producto->listar();
         <form method="POST" id="formProducto" class="form">
             <div class="form-group">
                 <label for="nombre">Nombre del producto</label>
-                <input type="text" id="nombre" name="nombre" placeholder="Ej: Laptop Lenovo">
+                <input type="text" name="nombre" value="<?= htmlspecialchars($nombre ?? '') ?>">
             </div>
 
             <div class="form-group">
                 <label for="descripcion">Descripción</label>
-                <textarea id="descripcion" name="descripcion" placeholder="Descripción opcional"></textarea>
+                <textarea name="descripcion"><?= htmlspecialchars($descripcion ?? '') ?></textarea>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="precio">Precio</label>
-                    <input type="number" id="precio" name="precio" step="0.01" min="0" placeholder="0.00">
+                    <input type="number" name="precio" value="<?= htmlspecialchars($precio ?? '') ?>">
                 </div>
 
                 <div class="form-group">
                     <label for="stock">Stock</label>
-                    <input type="number" id="stock" name="stock" min="0" placeholder="0">
+                    <input type="number" name="stock" value="<?= htmlspecialchars($stock ?? '') ?>">
                 </div>
             </div>
 
@@ -138,5 +142,11 @@ $productos = $producto->listar();
 </div>
 
 <script src="public/recursos/js/productos.js"></script>
+<script>
+setTimeout(() => {
+    const alertas = document.querySelectorAll('.alert');
+    alertas.forEach(a => a.style.display = 'none');
+}, 3000);
+</script>
 </body>
 </html>

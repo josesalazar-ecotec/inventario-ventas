@@ -178,3 +178,6 @@ tbody tr:hover {
 .btn-eliminar:hover {
     background: #dc2626;
 }
+.alert {
+    transition: all 0.3s ease;
+}
