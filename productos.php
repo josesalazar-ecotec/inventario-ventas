@@ -103,6 +103,7 @@ $productos = $producto->listar();
                     <th>Precio</th>
                     <th>Stock</th>
                     <th>Fecha</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -114,6 +115,17 @@ $productos = $producto->listar();
                         <td>$<?= number_format($item["precio"], 2) ?></td>
                         <td><?= htmlspecialchars($item["stock"]) ?></td>
                         <td><?= htmlspecialchars($item["creado_en"]) ?></td>
+                        <td class="acciones">
+                            <a class="btn-editar" href="editar_producto.php?id=<?= htmlspecialchars($item["id"]) ?>">Editar</a>
+
+                            <a 
+                            class="btn-eliminar" 
+                            href="eliminar_producto.php?id=<?= htmlspecialchars($item["id"]) ?>"
+                            onclick="return confirm('¿Seguro que deseas eliminar este producto?');"
+                            >
+                            Eliminar
+                            </a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
