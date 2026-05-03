@@ -205,3 +205,93 @@ tbody tr:hover {
 h3 {
     margin-top: 20px;
 }
+.venta-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.venta-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 15px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.venta-header:hover {
+    background: #e0f2fe;
+}
+
+.venta-detalle {
+    display: none;
+    padding: 15px;
+}
+.menu {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 12px 20px;
+    background: #1e3a8a;
+    border-radius: 10px;
+}
+
+.menu a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.menu a:hover {
+    text-decoration: underline;
+}
+.menu-principal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e3a8a;
+    padding: 16px 24px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 20px rgba(30, 58, 138, 0.18);
+}
+
+.menu-logo {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.menu-links {
+    display: flex;
+    gap: 12px;
+}
+
+.menu-links a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: 0.2s ease;
+}
+
+.menu-links a:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 700px) {
+    .menu-principal {
+        flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    .menu-links {
+        flex-wrap: wrap;
+    }
+}

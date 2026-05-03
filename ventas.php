@@ -65,6 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <body>
 
 <div class="container">
+    <?php include "menu.php"; ?>
     <div class="card">
         <h2>Nueva venta</h2>
 

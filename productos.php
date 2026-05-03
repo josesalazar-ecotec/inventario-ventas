@@ -53,6 +53,7 @@ $productos = $producto->listar();
 <body>
 
 <div class="container">
+    <?php include "menu.php"; ?>
     <header class="header">
         <h1>Inventario + Ventas</h1>
         <p>Registro de productos</p>
