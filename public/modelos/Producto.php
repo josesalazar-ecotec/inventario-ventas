@@ -24,4 +24,15 @@ class Producto
 
         return $stmt->execute();
     }
+    public function listar(): array
+    {
+        $sql = "SELECT id, nombre, descripcion, precio, stock, creado_en 
+                FROM productos 
+                ORDER BY id DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

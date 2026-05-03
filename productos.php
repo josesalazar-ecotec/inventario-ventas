@@ -31,6 +31,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 }
+$database = new Database();
+$db = $database->getConnection();
+
+$producto = new Producto($db);
+$productos = $producto->listar();
 ?>
 
 <!DOCTYPE html>
@@ -85,6 +90,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <button type="submit">Guardar producto</button>
         </form>
+        <section class="tabla-contenedor">
+    <h2>Productos registrados</h2>
+
+    <?php if (count($productos) > 0): ?>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Producto</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($productos as $item): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($item["id"]) ?></td>
+                        <td><?= htmlspecialchars($item["nombre"]) ?></td>
+                        <td><?= htmlspecialchars($item["descripcion"]) ?></td>
+                        <td>$<?= number_format($item["precio"], 2) ?></td>
+                        <td><?= htmlspecialchars($item["stock"]) ?></td>
+                        <td><?= htmlspecialchars($item["creado_en"]) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p class="texto-vacio">No hay productos registrados todavía.</p>
+    <?php endif; ?>
+</section>
     </main>
 </div>
 
