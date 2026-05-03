@@ -9,55 +9,81 @@ class Venta
         $this->conn = $db;
     }
 
-    public function registrar(int $productoId, int $cantidad): bool
-    {
-        $this->conn->beginTransaction();
+    public function registrarMultiple(array $items): bool
+{
+    $this->conn->beginTransaction();
 
-        try {
-            $sqlProducto = "SELECT precio, stock FROM productos WHERE id = :id LIMIT 1";
-            $stmtProducto = $this->conn->prepare($sqlProducto);
-            $stmtProducto->bindParam(":id", $productoId, PDO::PARAM_INT);
-            $stmtProducto->execute();
+    try {
+        $totalGeneral = 0;
 
-            $producto = $stmtProducto->fetch(PDO::FETCH_ASSOC);
+        // Validar stock y calcular total
+        foreach ($items as $item) {
+            $sql = "SELECT precio, stock FROM productos WHERE id = :id LIMIT 1";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(":id", $item["producto_id"], PDO::PARAM_INT);
+            $stmt->execute();
 
-            if (!$producto || $producto["stock"] < $cantidad) {
+            $producto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$producto || $producto["stock"] < $item["cantidad"]) {
                 $this->conn->rollBack();
                 return false;
             }
 
-            $total = $producto["precio"] * $cantidad;
+            $subtotal = $producto["precio"] * $item["cantidad"];
+            $totalGeneral += $subtotal;
+        }
 
-            $sqlVenta = "INSERT INTO ventas (total) VALUES (:total)";
-            $stmtVenta = $this->conn->prepare($sqlVenta);
-            $stmtVenta->bindParam(":total", $total);
-            $stmtVenta->execute();
+        // Crear venta
+        $sqlVenta = "INSERT INTO ventas (total) VALUES (:total)";
+        $stmtVenta = $this->conn->prepare($sqlVenta);
+        $stmtVenta->bindParam(":total", $totalGeneral);
+        $stmtVenta->execute();
 
-            $ventaId = (int) $this->conn->lastInsertId();
+        $ventaId = (int) $this->conn->lastInsertId();
 
+        // Insertar detalles
+        foreach ($items as $item) {
+
+            $sql = "SELECT precio FROM productos WHERE id = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(":id", $item["producto_id"], PDO::PARAM_INT);
+            $stmt->execute();
+
+            $producto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $subtotal = $producto["precio"] * $item["cantidad"];
+
+            // Insert detalle
             $sqlDetalle = "INSERT INTO venta_detalles 
-                (venta_id, producto_id, cantidad, precio_unitario, subtotal)
-                VALUES (:venta_id, :producto_id, :cantidad, :precio_unitario, :subtotal)";
+            (venta_id, producto_id, cantidad, precio_unitario, subtotal)
+            VALUES (:venta_id, :producto_id, :cantidad, :precio, :subtotal)";
 
             $stmtDetalle = $this->conn->prepare($sqlDetalle);
-            $stmtDetalle->bindParam(":venta_id", $ventaId, PDO::PARAM_INT);
-            $stmtDetalle->bindParam(":producto_id", $productoId, PDO::PARAM_INT);
-            $stmtDetalle->bindParam(":cantidad", $cantidad, PDO::PARAM_INT);
-            $stmtDetalle->bindParam(":precio_unitario", $producto["precio"]);
-            $stmtDetalle->bindParam(":subtotal", $total);
+            $stmtDetalle->bindParam(":venta_id", $ventaId);
+            $stmtDetalle->bindParam(":producto_id", $item["producto_id"]);
+            $stmtDetalle->bindParam(":cantidad", $item["cantidad"]);
+            $stmtDetalle->bindParam(":precio", $producto["precio"]);
+            $stmtDetalle->bindParam(":subtotal", $subtotal);
             $stmtDetalle->execute();
 
-            $sqlStock = "UPDATE productos SET stock = stock - :cantidad WHERE id = :id";
-            $stmtStock = $this->conn->prepare($sqlStock);
-            $stmtStock->bindParam(":cantidad", $cantidad, PDO::PARAM_INT);
-            $stmtStock->bindParam(":id", $productoId, PDO::PARAM_INT);
-            $stmtStock->execute();
+            // Actualizar stock
+            $sqlStock = "UPDATE productos 
+                         SET stock = stock - :cantidad 
+                         WHERE id = :id";
 
-            $this->conn->commit();
-            return true;
-        } catch (Exception $e) {
-            $this->conn->rollBack();
-            return false;
+            $stmtStock = $this->conn->prepare($sqlStock);
+            $stmtStock->bindParam(":cantidad", $item["cantidad"]);
+            $stmtStock->bindParam(":id", $item["producto_id"]);
+            $stmtStock->execute();
         }
+
+        $this->conn->commit();
+        return true;
+
+    } catch (Exception $e) {
+        $this->conn->rollBack();
+        return false;
     }
+}
 }

@@ -4,9 +4,6 @@ require_once "Config/database.php";
 require_once "public/modelos/Producto.php";
 require_once "public/modelos/Venta.php";
 
-$mensaje = "";
-$error = "";
-
 $database = new Database();
 $db = $database->getConnection();
 
@@ -15,20 +12,44 @@ $ventaModel = new Venta($db);
 
 $productos = $productoModel->listar();
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $productoId = (int) ($_POST["producto_id"] ?? 0);
-    $cantidad = (int) ($_POST["cantidad"] ?? 0);
+$mensaje = "";
+$error = "";
 
-    if ($productoId <= 0) {
-        $error = "Debe seleccionar un producto.";
-    } elseif ($cantidad <= 0) {
-        $error = "La cantidad debe ser mayor a 0.";
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $productosSeleccionados = $_POST["producto_id"] ?? [];
+    $cantidades = $_POST["cantidad"] ?? [];
+
+    if (!is_array($productosSeleccionados)) {
+        $productosSeleccionados = [$productosSeleccionados];
+    }
+
+    if (!is_array($cantidades)) {
+        $cantidades = [$cantidades];
+    }
+
+    $items = [];
+
+    for ($i = 0; $i < count($productosSeleccionados); $i++) {
+        $productoId = (int) $productosSeleccionados[$i];
+        $cantidad = (int) $cantidades[$i];
+
+        if ($productoId > 0 && $cantidad > 0) {
+            $items[] = [
+                "producto_id" => $productoId,
+                "cantidad" => $cantidad
+            ];
+        }
+    }
+
+    if (count($items) === 0) {
+        $error = "Debe agregar al menos un producto.";
     } else {
-        if ($ventaModel->registrar($productoId, $cantidad)) {
+        if ($ventaModel->registrarMultiple($items)) {
             $mensaje = "Venta registrada correctamente.";
             $productos = $productoModel->listar();
         } else {
-            $error = "No se pudo registrar la venta. Revise el stock disponible.";
+            $error = "Error en la venta. Verifique stock.";
         }
     }
 }
@@ -38,59 +59,51 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ventas | Inventario + Ventas</title>
+    <title>Ventas</title>
     <link rel="stylesheet" href="public/recursos/css/estilos.css">
 </head>
 <body>
 
 <div class="container">
-    <header class="header">
-        <h1>Inventario + Ventas</h1>
-        <p>Registro de ventas</p>
-    </header>
-
-    <main class="card">
+    <div class="card">
         <h2>Nueva venta</h2>
 
         <?php if ($mensaje): ?>
-            <div class="alert success"><?= htmlspecialchars($mensaje) ?></div>
+            <div class="alert success"><?= $mensaje ?></div>
         <?php endif; ?>
 
         <?php if ($error): ?>
-            <div class="alert error"><?= htmlspecialchars($error) ?></div>
+            <div class="alert error"><?= $error ?></div>
         <?php endif; ?>
 
-        <form method="POST" id="formVenta" class="form">
-            <div class="form-group">
-                <label for="producto_id">Producto</label>
-                <select id="producto_id" name="producto_id">
-                    <option value="">Seleccione un producto</option>
-
-                    <?php foreach ($productos as $producto): ?>
-                        <?php if ((int) $producto["stock"] > 0): ?>
-                            <option value="<?= htmlspecialchars($producto["id"]) ?>">
-                                <?= htmlspecialchars($producto["nombre"]) ?>
-                                - Stock: <?= htmlspecialchars($producto["stock"]) ?>
-                                - $<?= number_format($producto["precio"], 2) ?>
-                            </option>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </select>
+        <form method="POST" id="formVenta">
+            <div class="fila-venta" style="font-weight:bold;">
+                <span>Producto</span>
+                <span>Cantidad</span>
+                <span>Precio</span>
+                <span>Subtotal</span>
             </div>
+            <div id="items"></div>
 
-            <div class="form-group">
-                <label for="cantidad">Cantidad</label>
-                <input type="number" id="cantidad" name="cantidad" min="1" placeholder="Ej: 1">
-            </div>
+            <button type="button" onclick="agregarItem()">+ Agregar producto</button>
+
+            <br><br>
+
+            <h3>Total: $<span id="total">0.00</span></h3>
 
             <button type="submit">Registrar venta</button>
         </form>
 
         <br>
-        <a href="productos.php">Ir a productos</a>
-    </main>
+        <a href="productos.php">Volver</a>
+    </div>
 </div>
 
+<script>
+const productos = <?= json_encode($productos) ?>;
+</script>
+ 
 <script src="public/recursos/js/ventas.js"></script>
+
 </body>
 </html>
